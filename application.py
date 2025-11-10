@@ -1,0 +1,103 @@
+import gc
+import os
+from typing import List, Dict, Any
+
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from sentence_transformers import SentenceTransformer
+
+# --- CONFIGURATION ---
+# The path to your local fine-tuned model
+MODEL_PATH = "embedding_model/danishbert-supabase-embeddings-v3/danishbert-supabase-embeddings-v3"
+# The API will use a regular synchronous function (def) for this endpoint,
+# which FastAPI automatically runs in a thread pool to avoid blocking the event loop.
+
+# --- INITIALIZATION ---
+app = FastAPI(
+    title="Sentence Transformer Embedding Service",
+    description="Generates embeddings for input text using a fine-tuned Sentence Transformer model."
+)
+
+# Allow CORS for development
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Adjust as needed for production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Global variable for the model
+model: SentenceTransformer = None
+
+@app.on_event("startup")
+def startup_event():
+    """Load the Sentence Transformer model on app startup."""
+    global model
+    print("Running script...")
+    print(f"Loading SentenceTransformer model from: {MODEL_PATH}...")
+    try:
+        # Load the local fine-tuned model
+        model = SentenceTransformer(MODEL_PATH)
+        total_params = sum(p.numel() for p in model.parameters())
+        print(f"Model loaded with {total_params} parameters.")
+    except Exception as e:
+        print(f"Error loading model: {e}")
+        # Re-raise the exception or set model to None if you want to handle failures gracefully
+        # For simplicity here, we assume a successful load or the app will fail fast
+        raise
+
+
+# --- Pydantic Models ---
+class EmbedRequest(BaseModel):
+    """Schema for the incoming embedding request."""
+    # Pydantic automatically validates that 'texts' is a list of strings
+    texts: List[str]
+
+
+class EmbedResponse(BaseModel):
+    """Schema for the outgoing embedding response."""
+    # The embeddings are returned as a list of lists (vectors)
+    embeddings: List[List[float]]
+
+
+# --- API ENDPOINT ---
+
+@app.post("/embed", response_model=EmbedResponse)
+def embed_text(request_data: EmbedRequest) -> Dict[str, Any]:
+    """
+    Generates embedding vectors for the provided list of texts.
+    
+    Since this is a synchronous function (def), FastAPI runs it in a background 
+    thread to prevent the CPU-intensive operation from blocking the main event loop.
+    """
+    if model is None:
+        raise HTTPException(status_code=503, detail="Embedding model not loaded")
+
+    texts = request_data.texts
+    print(f"this is text obj: {texts}")
+    try:
+        # 1. Generate Embeddings (CPU-bound)
+        # Note: model.encode naturally handles a list of strings
+        embeddings = model.encode(texts).tolist()
+
+        # 2. Prepare response and cleanup
+        response = {"embeddings": embeddings}
+        
+        # Explicit memory cleanup (similar to your Flask approach)
+        del embeddings
+        gc.collect()
+
+        return response
+
+    except Exception as e:
+        # Log the error details
+        print(f"Encoding error: {e}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"An error occurred during embedding generation: {str(e)}"
+        )
+
+
+# uvicorn application:app --reload --host 0.0.0.0 --port 5001
