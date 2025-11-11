@@ -12,6 +12,13 @@ pip-log.txt
 pip-delete-this-directory.txt
 .history/
 .vscode/
+.env/
+.env*
+.env
+env
+../.env
+
+
 
 IDE / OS Specific Files
 
@@ -26,3 +33,5 @@ Machine Learning / Large Files
 Users should download them separately or use Git LFS 
 
 embedding_model/danishbert-supabase-embeddings-v3/danishbert-supabase-embeddings-v3/
+
+

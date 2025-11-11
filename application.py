@@ -2,6 +2,8 @@ import gc
 import os
 from typing import List, Dict, Any
 
+from dotenv import load_dotenv
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -84,6 +86,7 @@ def embed_text(request_data: EmbedRequest) -> Dict[str, Any]:
         
         del embeddings
         gc.collect()
+        
 
         return response
 
@@ -97,3 +100,5 @@ def embed_text(request_data: EmbedRequest) -> Dict[str, Any]:
 
 # uvicorn application:app --reload --host 0.0.0.0 --port 5001    
 # used for running the script 
+
+# fetch similar items 
