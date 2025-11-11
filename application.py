@@ -8,7 +8,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
-
+import auth
 
 MODEL_PATH = "embedding_model/danishbert-supabase-embeddings-v3/danishbert-supabase-embeddings-v3"
 # The API will use a regular synchronous function (def) for this endpoint,
@@ -49,6 +49,7 @@ def startup_event():
         # For simplicity here, we assume a successful load or the app will fail fast
         raise
 
+app.include_router(auth.router)
 
 # --- Pydantic Models ---
 class EmbedRequest(BaseModel):
@@ -64,7 +65,6 @@ class EmbedResponse(BaseModel):
 
 
 # --- API ENDPOINT ---
-
 @app.post("/embed", response_model=EmbedResponse)
 def embed_text(request_data: EmbedRequest) -> Dict[str, Any]:
     """
@@ -95,7 +95,9 @@ def embed_text(request_data: EmbedRequest) -> Dict[str, Any]:
         raise HTTPException(
             status_code=500, 
             detail=f"An error occurred during embedding generation: {str(e)}"
-        )
+        ) 
+
+# fetch_similiar_items  rpc call on supabase
 
 
 # uvicorn application:app --reload --host 0.0.0.0 --port 5001    
