@@ -13,7 +13,7 @@ import auth
 MODEL_PATH = "embedding_model/danishbert-supabase-embeddings-v3/danishbert-supabase-embeddings-v3"
 # The API will use a regular synchronous function (def) for this endpoint,
 # which FastAPI automatically runs in a thread pool to avoid blocking the event loop.
-# Default is 40 threads for per worker - 40 concurrenct requests.  
+# Default is 40 threads for per worker - 40 concurrenct requests.
 
 
 app = FastAPI(
@@ -32,6 +32,7 @@ app.add_middleware(
 
 model: SentenceTransformer = None
 
+
 @app.on_event("startup")
 def startup_event():
     """Load the Sentence Transformer model on app startup."""
@@ -49,9 +50,12 @@ def startup_event():
         # For simplicity here, we assume a successful load or the app will fail fast
         raise
 
+
 app.include_router(auth.router)
 
 # --- Pydantic Models ---
+
+
 class EmbedRequest(BaseModel):
     """Schema for the incoming embedding request."""
     # Pydantic automatically validates that 'texts' is a list of strings
@@ -69,38 +73,38 @@ class EmbedResponse(BaseModel):
 def embed_text(request_data: EmbedRequest) -> Dict[str, Any]:
     """
     Generates embedding vectors for the provided list of texts.
-    
+
     Since this is a synchronous function (def), FastAPI runs it in a background 
     thread to prevent the CPU-intensive operation from blocking the main event loop.
     """
     if model is None:
-        raise HTTPException(status_code=503, detail="Embedding model not loaded")
+        raise HTTPException(
+            status_code=503, detail="Embedding model not loaded")
 
     texts = request_data.texts
     print(f"this is text obj: {texts}")
     try:
         # (CPU-bound)
         embeddings = model.encode(texts)
-        print(embeddings.shape) #output dimension size
+        print(embeddings.shape)  # output dimension size
         response = {"embeddings": embeddings}
-        
+
         del embeddings
         gc.collect()
-        
 
         return response
 
     except Exception as e:
         print(f"Encoding error: {e}")
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail=f"An error occurred during embedding generation: {str(e)}"
-        ) 
+        )
 
 # fetch_similiar_items  rpc call on supabase
 
 
-# uvicorn application:app --reload --host 0.0.0.0 --port 5001    
-# used for running the script 
+# uvicorn application:app --reload --host 0.0.0.0 --port 5001
+# used for running the script
 
-# fetch similar items 
+# fetch similar items
