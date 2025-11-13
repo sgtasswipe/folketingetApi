@@ -37,7 +37,7 @@ async def sign_up_with_email(credentials: UserCredentials):
         })
         raw = response.model_dump()
         print(raw)
-
+   
         if response.session:
             return {
                 "message": "user has been registered and is able to log in",
@@ -68,12 +68,12 @@ async def login(credentials: UserCredentials):
         })
         print(response.model_dump())
 
-    # check if user is present - if session is there, the user is validated. if not, need email confirmation
+    
         if response.user is None and response.session.access_token is None:
             raise HTTPException(
                 status_code=422,
                 detail="The login was unable to proccess. Please try again later. Details:"
-            )
+            )   
         return {
             "message": "User signed in succesfully",
             "uid": response.user.id,
