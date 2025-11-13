@@ -61,16 +61,23 @@ async def sign_up_with_email(credentials: UserCredentials):
 async def login(credentials: UserCredentials):
     email = credentials.email
     password = credentials.password
-    response = supabase.auth.sign_in_with_password({
-        "email": email,
-        "password": password,
-    })
-    raw = response.model_dump()  # session - access_token bearer auth JWT
-    # check if user is present - if session is there, the user is validated. if not, need email confirmation
-    if response.user is None and response.session.access_token is None:
-        raise HTTPException(
-            status_code=422,
-            detail="The login was unable to proccess. Please try again later. Details:"
-        )
+    try:
+        response = supabase.auth.sign_in_with_password({
+            "email": email,
+            "password": password,
+        })
+        print(response.model_dump())
 
-    print(raw)
+    # check if user is present - if session is there, the user is validated. if not, need email confirmation
+        if response.user is None and response.session.access_token is None:
+            raise HTTPException(
+                status_code=422,
+                detail="The login was unable to proccess. Please try again later. Details:"
+            )
+        return {
+            "message": "User signed in succesfully",
+            "uid": response.user.id,
+            "access_token": response.session.access_token
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"failed to sign in: {e}")
