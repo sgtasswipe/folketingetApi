@@ -3,15 +3,16 @@ import os
 from typing import List, Dict, Any
 
 from dotenv import load_dotenv
-from util import supabase
+from util.supabase_client_creator import get_supabase_client
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
+import asyncio
 import auth
 
 MODEL_PATH = "embedding_model/danishbert-supabase-embeddings-v3/danishbert-supabase-embeddings-v3"
-# The API will use a regular synchronous fun ction (def) for this endpoint,
+# The API will use a regular synchronous function (def) for this endpoint,
 # which FastAPI automatically runs in a thread pool to avoid blocking the event loop.
 # Default is 40 threads for per worker - 40 concurrenct requests.
 
@@ -104,8 +105,16 @@ def embed_text(request_data: EmbedRequest) -> Dict[str, Any]:
 # fetch_similiar_items  rpc call on supabase
 
 
-async def fetch_similar_votings_from_supabase(embeddings: EmbedResponse):
-    supabase_client = supabase.create_supabase_client
+async def fetch_similar_votings_from_supabase(embedding: EmbedResponse, match_count: int, match_threshold: float):
+    supabase = await get_supabase_client()
+    params = {
+        "query_embedding": embedding,
+        "match_count": match_count,
+        "match_threshold": match_threshold,
+    }
+    reponse = (supabase.rpc("fetch_similar_items", params).execute())
+
+    print(reponse)
 
 
 # uvicorn application:app --reload --host 0.0.0.0 --port 5001

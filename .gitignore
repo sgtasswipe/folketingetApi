@@ -31,7 +31,7 @@ Machine Learning / Large Files
 
 ################################
 Users should download them separately or use Git LFS 
-
+embedding_model/*
 embedding_model/danishbert-supabase-embeddings-v3/danishbert-supabase-embeddings-v3/
 
 

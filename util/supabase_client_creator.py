@@ -7,9 +7,10 @@ url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
 
 
-async def create_supabase_client():
+def get_supabase_client():
     try:
         supabase: Client = create_client(url, key)
+        print("supabase client created")
         return supabase
     except Exception as e:
         raise RuntimeError(f"Failed to create Supabase Client {e}")
