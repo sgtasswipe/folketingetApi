@@ -15,4 +15,4 @@ pip install -r requirements.txt
 
 # Run
 
-uvicorn application:app --reload --host 0.0.0.0 --port 5001
+uvicorn search:app --reload --host 0.0.0.0 --port 5001
