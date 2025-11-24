@@ -27,7 +27,7 @@ load_dotenv()
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 # Assumes you have the model locally
-MODEL_PATH = "embedding_model/danishbert-cosine-embeddings"
+MODEL_PATH = "embedding_model/danishbert-cosine-embeddings/"
 API_BASE_URL = "https://oda.ft.dk/api/Afstemning"
 BATCH_SIZE = 100  # Size of each upload batch to Supabase
 TARGET_TABLE = "afstemninger_bert_v2"  # The new table
