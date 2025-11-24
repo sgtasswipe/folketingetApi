@@ -4,7 +4,7 @@ from typing import List, Dict, Any, Optional
 
 from dotenv import load_dotenv
 from util.supabase_client_creator import get_supabase_client
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from sentence_transformers import SentenceTransformer
@@ -67,7 +67,7 @@ class SearchRequest(BaseModel):
 
 # --- Supabase Search Function (Async) ---
 
-async def fetch_similar_items_from_supabase(embedding: List[float], match_count: int, match_threshold: float) -> List[Dict[str, Any]]:
+async def fetch_similar_items_from_supabase(query_text: str, embedding: List[float], match_count: int, match_threshold: float) -> List[Dict[str, Any]]:
     """
     Connects to Supabase and calls the 'fetch_similar_items' RPC function.
     """
@@ -76,13 +76,14 @@ async def fetch_similar_items_from_supabase(embedding: List[float], match_count:
 
         # Parameters for the Supabase RPC function
         params = {
+            "query_text": query_text,
             "query_embedding": embedding,
             "match_count": match_count,
             "match_threshold": match_threshold,
         }
 
         response = await run_in_threadpool(
-            supabase.rpc("fetch_similar_items", params).execute
+            supabase.rpc("fetch_similar_items3", params).execute
         )
 
         return response.data
@@ -96,10 +97,16 @@ async def fetch_similar_items_from_supabase(embedding: List[float], match_count:
         )
 
 
+def get_model():
+    if model is None:
+        raise RuntimeError("Model not loaded")
+    return model
+
 # --- API Endpoint ---
 
+
 @app.post("/search", response_model=List[Dict[str, Any]])
-async def search_similar_items(request_data: SearchRequest) -> List[Dict[str, Any]]:
+async def search_similar_items(request_data: SearchRequest, model: SentenceTransformer = Depends(get_model)) -> List[Dict[str, Any]]:
     """
     Handles the end-to-end process: embeds the query and searches Supabase for similar items.
     """
@@ -130,11 +137,13 @@ async def search_similar_items(request_data: SearchRequest) -> List[Dict[str, An
     # Search Supabase (I/O-bound, so we must await the async function)
     # The result will be a list of dicts (votings with titel, id etc.)
     similar_items = await fetch_similar_items_from_supabase(
+        query_text=query_text,
         embedding=query_embedding,
         match_count=request_data.match_count,
         match_threshold=request_data.match_threshold
     )
 
-    # 3. Return the results directly to the React Native app
+    # Return the results directly to the React Native app
     return similar_items
+
 # uvicorn search:app --reload --host 0.0.0.0 --port 5001
