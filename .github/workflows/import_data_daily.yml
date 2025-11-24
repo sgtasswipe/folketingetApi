@@ -28,6 +28,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: test wkdir
+      run: ls -lR embedding_model/danishbert-cosine-embeddings
+
     - name: Run import_data.py
       env:
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
