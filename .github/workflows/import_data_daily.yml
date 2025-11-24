@@ -22,14 +22,17 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.13.9'
+      
+    - name: Install Git LFS
+      run: git lfs install
+
+    - name: Pull Git LFS files
+      run: git lfs pull
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-
-    - name: test wkdir
-      run: ls -lR embedding_model/danishbert-cosine-embeddings
 
     - name: Run import_data.py
       env:
