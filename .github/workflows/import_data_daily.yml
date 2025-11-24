@@ -9,7 +9,7 @@ on:
         default: 'main'
 
 jobs:
-  run_import_script:
+  Run import_data script:
     runs-on: ubuntu-latest
 
     steps:
