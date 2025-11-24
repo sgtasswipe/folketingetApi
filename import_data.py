@@ -55,6 +55,7 @@ elif torch.backends.mps.is_available():
 else:
     DEVICE = "cpu"
     print("CUDA/MPS not available. Falling back to CPU.")
+    print(f"Model path: {MODEL_PATH}")
 
 try:
     # Load the Sentence Transformer model and explicitly assign the device
