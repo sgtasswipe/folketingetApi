@@ -5,7 +5,9 @@ import time
 import gc
 from typing import List, Dict, Any
 import torch  # Import torch for GPU detection and management
-
+from util.supabase_client_creator import get_supabase_client
+from starlette.concurrency import run_in_threadpool
+import asyncio
 
 from dotenv import load_dotenv
 from supabase.client import create_client, Client
@@ -55,6 +57,7 @@ elif torch.backends.mps.is_available():
 else:
     DEVICE = "cpu"
     print("CUDA/MPS not available. Falling back to CPU.")
+    print(f"Model path: {MODEL_PATH}")
 
 try:
     # Load the Sentence Transformer model and explicitly assign the device
@@ -71,8 +74,16 @@ except Exception as e:
 
 # --- Functions ---
 
-def fetch_all_afstemninger() -> List[Dict[str, Any]]:
-    """Fetches all 'Afstemninger' (Votes) from the Danish Parliament OData API with pagination."""
+async def get_latest_voting_date_from_db():
+    supabase = get_supabase_client()
+
+    response = await run_in_threadpool(
+        lambda: supabase.rpc("fetch_latest_voting", {"tbl_name": TARGET_TABLE}).execute()
+    )
+
+    return response.data
+
+def fetch_all_afstemninger(latest_result) -> List[Dict[str, Any]]:
     all_records = []
     skip = 0
     total_count = None
@@ -84,7 +95,7 @@ def fetch_all_afstemninger() -> List[Dict[str, Any]]:
 
         try:
             response = requests.get(url, timeout=30)
-            response.raise_for_status()  # Raise exception for bad status codes
+            response.raise_for_status()
             data = response.json()
         except requests.exceptions.RequestException as e:
             print(f"API Error at skip={skip}: {e}")
@@ -93,23 +104,36 @@ def fetch_all_afstemninger() -> List[Dict[str, Any]]:
         if total_count is None:
             total_count = int(data.get('odata.count', 0))
             print(f"Found a total of {total_count} votes to fetch.")
-
+        
         records = data.get('value', [])
+
         if not records:
             break
 
-        all_records.extend(records)
+        if latest_result:
+            filtered_records = []
+            latest_date = latest_result[0]['afstemning_dato']
+            for record in records:
+                record_date = record.get('Sagstrin', {}).get('dato')
+                if record_date and record_date > latest_date:
+                    filtered_records.append(record)
+            
+            if not filtered_records:
+                break
+            
+            all_records.extend(filtered_records)
+        else:
+            all_records.extend(records)
+
         skip += len(records)
 
         print(f"Fetched {skip}/{total_count} records...")
 
-        # OData API normally returns 100 records per call if no $top is specified
         if len(records) < 100 or skip >= total_count:
             break
 
     print(f"Retrieval complete. Total records: {len(all_records)}")
     return all_records
-
 
 def prepare_and_embed_data(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Prepares data and generates embeddings."""
@@ -220,8 +244,14 @@ def save_to_supabase_in_batches(data: List[Dict[str, Any]]):
 if __name__ == "__main__":
     start_time = time.time()
 
+    latest_result = asyncio.run(get_latest_voting_date_from_db())
+    if latest_result and 'afstemning_dato' in latest_result[0] and latest_result[0]['afstemning_dato']:
+        print(f"Latest voting date found in DB: {latest_result[0]['afstemning_dato']}")
+    else:
+        print("No voting date found in DB")
+
     # 1. Fetch all votes
-    all_afstemninger = fetch_all_afstemninger()
+    all_afstemninger = fetch_all_afstemninger(latest_result)
 
     if all_afstemninger:
         # 2. Prepare data and generate embeddings
