@@ -7,6 +7,8 @@ on:
         description: 'Choose branch'
         required: true
         default: 'main'
+  schedule:
+    - cron: '0 1 * * *'
 
 jobs:
   Run_import_data_script:
