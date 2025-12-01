@@ -83,9 +83,10 @@ async def fetch_similar_items_from_supabase(query_text: str, embedding: List[flo
         }
 
         response = await run_in_threadpool(
-            supabase.rpc("fetch_similar_items3", params).execute
+            supabase.rpc("fetch_similar_items_v2", params).execute
         )
-
+        print(response)
+        print(response.data)
         return response.data
         # The data property contains the result from the RPC call. This will be returned to caller.
 
