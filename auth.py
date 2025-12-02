@@ -92,6 +92,7 @@ async def delete_user(request: DeleteUserRequest):
     token = request.access_token
 
     try:
+        print("Trying to get user data via supabase")
         user_data = supabase.auth.get_user(token)
         if not user_data.user:
             raise HTTPException(status_code=401, detail="Invalid access token")
