@@ -77,12 +77,12 @@ StrEnum==0.4.15
 supabase==2.24.0
 supabase-auth==2.24.0
 supabase-functions==2.24.0
-sympy==1.13.1
+sympy==1.13.3
 threadpoolctl==3.6.0
 tokenizers==0.22.1
-torch==2.5.1+cu121
-torchaudio==2.5.1+cu121
-torchvision==0.20.1+cu121
+torch==2.9.1
+torchaudio==2.9.1
+torchvision==0.24.1
 tqdm==4.67.1
 transformers==4.57.1
 typer==0.20.0
