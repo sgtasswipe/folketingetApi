@@ -59,8 +59,8 @@ class SearchRequest(BaseModel):
                             # ... =  "ellipsis" value used for explicitly stating the field is required.
                             description="The text query to be embedded and searched.")
     # not needed as no default value also means required, but stated expilicitly as the query need a str to embed.
-    match_count: int = Field(
-        10, description="The maximum number of similar items to return.")
+    match_count: Optional[int] = Field(
+        None, description="The maximum number of similar items to return. If no explicit value is specified, will return all above match_threshold")
     match_threshold: float = Field(
         0.5, description="The minimum similarity score for a match.")
 
@@ -116,6 +116,7 @@ async def search_similar_items(request_data: SearchRequest, model: SentenceTrans
             status_code=503, detail="Embedding model not loaded")
 
     query_text = request_data.query_text
+    match_count = request_data.match_count or 1000
 
     try:
         # Note: model.encode returns a numpy array for a list of texts (even one text)
@@ -140,10 +141,10 @@ async def search_similar_items(request_data: SearchRequest, model: SentenceTrans
     similar_items = await fetch_similar_items_from_supabase(
         query_text=query_text,
         embedding=query_embedding,
-        match_count=request_data.match_count,
+        match_count=match_count,
         match_threshold=request_data.match_threshold
     )
-
+    print(len(similar_items))
     # Return the results directly to the React Native app
     return similar_items
 
