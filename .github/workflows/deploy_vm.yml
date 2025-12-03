@@ -2,7 +2,7 @@ name: Deploy Backend to Azure VM
 
 on:
   push:
-    branches: [ "search" ]
+    branches: [ "main" ]
 
 jobs:
   deploy:
