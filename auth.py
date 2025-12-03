@@ -99,6 +99,7 @@ async def delete_user(request: DeleteUserRequest):
 
         user_id = user_data.user.id
 
+        print(user_data)
         # Delete the user
         response = supabase.auth.admin.delete_user(user_id)
         return {"message": f"User {user_id} deleted successfully."}
