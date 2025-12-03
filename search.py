@@ -1,7 +1,6 @@
 import gc
 import os
 from typing import List, Dict, Any, Optional
-
 from dotenv import load_dotenv
 from util.supabase_client_creator import get_supabase_client
 from fastapi import FastAPI, HTTPException, Depends
@@ -32,7 +31,7 @@ app.add_middleware(
 
 model: Optional[SentenceTransformer] = None
 
-
+# Yeah
 @app.on_event("startup")
 def startup_event():
     """Load the Sentence Transformer model on app startup."""
