@@ -36,7 +36,7 @@ async def sign_up_with_email(credentials: UserCredentials):
             "password": password,
         })
         raw = response.model_dump()
-        print(raw)
+        # print(raw)
 
         if response.session:
             return {
@@ -61,26 +61,31 @@ async def sign_up_with_email(credentials: UserCredentials):
 async def login(credentials: UserCredentials):
     email = credentials.email
     password = credentials.password
+
     try:
+        # Try Supabase authentication
         response = supabase.auth.sign_in_with_password({
             "email": email,
             "password": password,
         })
-        print(response.model_dump())
-
-        if response.user is None and response.session.access_token is None:
-            raise HTTPException(
-                status_code=422,
-                detail="The login was unable to proccess. Please try again later. Details:"
-            )
-        return {
-            "message": "User signed in succesfully",
-            "uid": response.user.id,
-            "access_token": response.session.access_token
-        }
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"failed to sign in: {e}")
+        # Supabase throws here for invalid credentials
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
 
+    if not response.user or not response.session or not response.session.access_token:
+        raise HTTPException(
+            status_code=422,
+            detail="Unable to process login."
+        )
+
+    return {
+        "message": "User signed in successfully",
+        "uid": response.user.id,
+        "access_token": response.session.access_token,
+    }
 
 class DeleteUserRequest(BaseModel):
     """Schema to delete a user"""

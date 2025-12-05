@@ -121,3 +121,8 @@ async def fetch_similar_votings_from_supabase(embedding: EmbedResponse, match_co
 # used for running the script
 
 # fetch similar items
+
+
+
+
+            ddsdsddasddasssssddsdsddmklsdmkldskmdseeeeggggfdffdffdffdf
