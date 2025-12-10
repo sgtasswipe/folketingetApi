@@ -42,6 +42,7 @@ def startup_event():
         model = SentenceTransformer(MODEL_PATH)
         total_params = sum(p.numel() for p in model.parameters())
         print(f"Model loaded with {total_params} parameters.")
+        print(f"Deployed via workflow file")
     except Exception as e:
         print(f"Error loading model: {e}")
         raise

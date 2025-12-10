@@ -8,8 +8,16 @@ from pydantic import BaseModel
 
 load_dotenv()  # loads .env into environ
 
+
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
+anon_key:str = os.environ.get("SUPABASE_ANON_KEY")
+
+# Public client (for reading user session)
+supabase_public: Client = create_client(url, anon_key)
+
+# Admin client (for deleting)
+supabase_admin: Client = create_client(url, key)
 try:
     supabase: Client = create_client(url, key)
 except Exception as e:
@@ -94,20 +102,19 @@ class DeleteUserRequest(BaseModel):
 
 @router.post("/delete_user")
 async def delete_user(request: DeleteUserRequest):
-    token = request.access_token
-
     try:
-        print("Trying to get user data via supabase")
-        user_data = supabase.auth.get_user(token)
-        if not user_data.user:
+        
+        user_data = supabase_public.auth.get_user(request.access_token)
+
+        if not user_data or not user_data.user:
             raise HTTPException(status_code=401, detail="Invalid access token")
 
         user_id = user_data.user.id
 
-        # Delete the user
-        response = supabase.auth.admin.delete_user(user_id)
+        
+        response = supabase_admin.auth.admin.delete_user(user_id)
+
         return {"message": f"User {user_id} deleted successfully."}
 
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail=f"Failed to delete user: {e}")
+        raise HTTPException(status_code=400, detail=f"Failed to delete user: {e}")
