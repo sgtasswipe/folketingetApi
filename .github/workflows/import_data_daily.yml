@@ -33,12 +33,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
 
-    - name: Install Git LFS
-      run: git lfs install
-
-    - name: Pull Git LFS files
-      run: git lfs pull
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -46,6 +40,7 @@ jobs:
 
     - name: Run import_data.py
       env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
         SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       run: python import_data.py
