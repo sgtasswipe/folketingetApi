@@ -8,11 +8,22 @@ import torch  # Import torch for GPU detection and management
 from util.supabase_client_creator import get_supabase_client
 from starlette.concurrency import run_in_threadpool
 import asyncio
+from huggingface_hub import snapshot_download
 
 from dotenv import load_dotenv
 from supabase.client import create_client, Client
 from sentence_transformers import SentenceTransformer
 
+HF_TOKEN = os.environ.get("HF_TOKEN")
+
+os.makedirs("embedding_model", exist_ok=True)
+
+snapshot_download(
+    repo_id="heizetagram/danishbert-cosine-embeddings",
+    local_dir="embedding_model",
+    local_dir_use_symlinks=False,
+    use_auth_token=True
+)
 
 # CUDA GPU CHECKS
 print(f"CUDA Available: {torch.cuda.is_available()}")
