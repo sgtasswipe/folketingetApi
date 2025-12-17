@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
 import asyncio
-import auth
+import controllers.auth as auth
 from huggingface_hub import snapshot_download
 
 

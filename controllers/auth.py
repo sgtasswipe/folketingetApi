@@ -1,50 +1,25 @@
-import os
-from supabase import create_client, Client
 from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException
-from typing import Dict, Any
-from pydantic import BaseModel
-
+from services.auth_service import UserCredentials, DeleteUserRequest, sign_up_user, login_user, get_user, delete_target_user
 
 load_dotenv()  # loads .env into environ
-
-
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
-anon_key:str = os.environ.get("SUPABASE_ANON_KEY")
-
-# Public client (for reading user session)
-supabase_public: Client = create_client(url, anon_key)
-
-# Admin client (for deleting)
-supabase_admin: Client = create_client(url, key)
-try:
-    supabase: Client = create_client(url, key)
-except Exception as e:
-    raise RuntimeError(f"Failed to create Supabase Client {e}")
 
 router = APIRouter(
     prefix="/auth"
 )
 
-
-class UserCredentials(BaseModel):
-    """Schema for User Information"""
-    email: str
-    password: str
-
-
 @router.post("/signup/email")
 async def sign_up_with_email(credentials: UserCredentials):
     email = credentials.email
     password = credentials.password
+
     try:
-        response = supabase.auth.sign_up({
+        params = {
             "email": email,
             "password": password,
-        })
-        raw = response.model_dump()
-        # print(raw)
+        }
+
+        response = await sign_up_user(params)
 
         if response.session:
             return {
@@ -71,11 +46,13 @@ async def login(credentials: UserCredentials):
     password = credentials.password
 
     try:
-        # Try Supabase authentication
-        response = supabase.auth.sign_in_with_password({
+        params = {
             "email": email,
             "password": password,
-        })
+        }
+
+        response = await login_user(params)
+
     except Exception as e:
         # Supabase throws here for invalid credentials
         raise HTTPException(
@@ -95,26 +72,19 @@ async def login(credentials: UserCredentials):
         "access_token": response.session.access_token,
     }
 
-class DeleteUserRequest(BaseModel):
-    """Schema to delete a user"""
-    access_token: str  # Supabase user ID
-
-
 @router.post("/delete_user")
 async def delete_user(request: DeleteUserRequest):
     try:
-        
-        user_data = supabase_public.auth.get_user(request.access_token)
+        user_data = await get_user(request.access_token)
 
         if not user_data or not user_data.user:
             raise HTTPException(status_code=401, detail="Invalid access token")
 
         user_id = user_data.user.id
 
+        await delete_target_user(user_id)
         
-        response = supabase_admin.auth.admin.delete_user(user_id)
-
         return {"message": f"User {user_id} deleted successfully."}
-
+    
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to delete user: {e}")
