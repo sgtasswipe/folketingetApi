@@ -10,6 +10,7 @@ from sentence_transformers import SentenceTransformer
 from starlette.concurrency import run_in_threadpool
 import asyncio
 import auth
+from fastapi import Header, HTTPException
 
 # --- Configuration ---
 load_dotenv()  # Load environment variables
@@ -28,6 +29,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+supabase = get_supabase_client()
 
 model: Optional[SentenceTransformer] = None
 
@@ -63,7 +65,9 @@ class SearchRequest(BaseModel):
         None, description="The maximum number of similar items to return. If no explicit value is specified, will return all above match_threshold")
     match_threshold: float = Field(
         0.5, description="The minimum similarity score for a match.")
-
+    
+class VoteRequest(BaseModel):
+    voting_id: int
 
 # --- Supabase Search Function (Async) ---
 
@@ -148,4 +152,64 @@ async def search_similar_items(request_data: SearchRequest, model: SentenceTrans
     # Return the results directly to the React Native app
     return similar_items
 
+# This should be moved into a separate file
+@app.get("/saved-votings")
+async def get_saved_votings(Authorization: Optional[str] = Header(None)):
+    if not Authorization or not Authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Header missing or malformed.")
+
+    user_id = Authorization.split(" ")[1] 
+
+    try:
+        response = supabase.rpc('get_user_saved_votes', {
+            'target_user_id': user_id
+        }).execute()
+        
+        if response.data is None:
+             return []
+             
+        return response.data
+
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=400, detail=f"Database error: {e}")
+    
+@app.post("/save-voting")
+async def save_voting(payload: VoteRequest, Authorization: Optional[str] = Header(None)):
+    if not Authorization or not Authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Authorization header missing.")
+
+    user_id = Authorization.split(" ")[1]
+
+    try:
+        response = supabase.rpc('save_user_afstemning', {
+            'p_user_id': user_id,
+            'p_afstemning_id': payload.voting_id
+        }).execute()
+
+        return {"status": "success", "message": f"Vote {payload.voting_id} saved for user {user_id}"}
+
+    except Exception as e:
+        print(f"Error saving vote: {e}")
+        raise HTTPException(status_code=400, detail=f"Database error: {e}")
+    
+@app.delete("/delete-voting")
+async def delete_voting(payload: VoteRequest, Authorization: Optional[str] = Header(None)):
+    if not Authorization or not Authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Authorization header missing.")
+
+    user_id = Authorization.split(" ")[1]
+
+    try:
+        response = supabase.rpc('delete_user_afstemning', {
+            'p_user_id': user_id,
+            'p_afstemning_id': payload.voting_id
+        }).execute()
+
+        return {"status": "success", "message": f"Vote {payload.voting_id} removed for user {user_id}"}
+
+    except Exception as e:
+        print(f"Error deleting vote: {e}")
+        raise HTTPException(status_code=400, detail=f"Database error: {e}")
+    
 # uvicorn search:app --reload --host 0.0.0.0 --port 5001
