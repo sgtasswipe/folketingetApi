@@ -77,4 +77,4 @@ async def search_similar_items(request_data: SearchRequest, model: SentenceTrans
     # Return the results directly to the React Native app
     return similar_items
 
-# uvicorn controllers.search:app --reload --host 0.0.0.0 --port 5001
+# uvicorn folketingetApi.controllers.search:app --reload --host 0.0.0.0 --port 5001
