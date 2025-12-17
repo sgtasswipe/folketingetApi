@@ -1,6 +1,6 @@
 import os
 from supabase import create_client, Client
-from util.supabase_client_creator import get_supabase_client
+from folketingetApi.util.supabase_client_creator import get_supabase_client
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")

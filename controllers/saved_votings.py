@@ -1,9 +1,9 @@
 # This should be moved into a separate file
 from fastapi import HTTPException, APIRouter, Header
-from util.supabase_client_creator import get_supabase_client
+from folketingetApi.util.supabase_client_creator import get_supabase_client
 from dotenv import load_dotenv
 from typing import Optional
-from services.saved_votings_service import VoteRequest, get_uid_from_token, save_user_voting, fetch_user_saved_votings, delete_user_saved_voting
+from folketingetApi.services.saved_votings_service import VoteRequest, get_uid_from_token, save_user_voting, fetch_user_saved_votings, delete_user_saved_voting
 
 load_dotenv()
 

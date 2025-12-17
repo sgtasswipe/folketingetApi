@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from repositories.saved_votings_repository import save_user_voting_db, fetch_user_saved_votings_db, delete_user_saved_voting_db
+from folketingetApi.repositories.saved_votings_repository import save_user_voting_db, fetch_user_saved_votings_db, delete_user_saved_voting_db
 
 class VoteRequest(BaseModel):
     voting_id: int

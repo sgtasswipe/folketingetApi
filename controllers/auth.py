@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException
-from services.auth_service import UserCredentials, DeleteUserRequest, sign_up_user, login_user, get_user, delete_target_user
+from folketingetApi.services.auth_service import UserCredentials, DeleteUserRequest, sign_up_user, login_user, get_user, delete_target_user
 
 load_dotenv()  # loads .env into environ
 

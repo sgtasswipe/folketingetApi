@@ -3,10 +3,10 @@ from typing import Optional, List
 from starlette.concurrency import run_in_threadpool
 from fastapi import HTTPException
 from sentence_transformers import SentenceTransformer
-from repositories.search_repository import fetch_similar_items
+from folketingetApi.repositories.search_repository import fetch_similar_items
 from typing import Dict, Any
 
-MODEL_PATH = "embedding_model/danishbert-cosine-embeddings"
+MODEL_PATH = "folketingetApi/embedding_model/danishbert-cosine-embeddings"
 model: Optional[SentenceTransformer] = None
 
 # --- Pydantic Models ---

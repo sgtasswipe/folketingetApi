@@ -3,11 +3,11 @@ from typing import List, Dict, Any
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from sentence_transformers import SentenceTransformer
-import controllers.auth as auth
-import controllers.saved_votings as saved_votings
 from fastapi import HTTPException
-from services.search_service import get_model, fetch_similar_items_from_supabase, SearchRequest, startup_event
+from sentence_transformers import SentenceTransformer
+import folketingetApi.controllers.auth as auth
+import folketingetApi.controllers.saved_votings as saved_votings
+from folketingetApi.services.search_service import get_model, fetch_similar_items_from_supabase, SearchRequest, startup_event
 
 # --- Configuration ---
 load_dotenv()  # Load environment variables
