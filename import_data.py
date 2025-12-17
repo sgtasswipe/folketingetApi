@@ -154,6 +154,7 @@ def prepare_and_embed_data(records: List[Dict[str, Any]]) -> List[Dict[str, Any]
         titelkort = sag.get('titelkort', '')
         resume = sag.get('resume', '')
         opdateringsdato = record.get('opdateringsdato')
+        type_id = record.get('typeid')
 
         # NEW FIELDS ADDED
         afstemning_dato = sagstrin.get('dato')       # Date from Sagstrin
@@ -178,6 +179,7 @@ def prepare_and_embed_data(records: List[Dict[str, Any]]) -> List[Dict[str, Any]
             'afstemning_dato': afstemning_dato,
             'sagstrin_titel': sagstrin_titel,
             'vedtaget': vedtaget,
+            'type_id': type_id,
 
             'opdateringsdato': opdateringsdato,
             'embedding_text': embedding_text,
