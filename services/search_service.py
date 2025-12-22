@@ -3,13 +3,21 @@ from typing import Optional, List
 from starlette.concurrency import run_in_threadpool
 from fastapi import HTTPException
 from sentence_transformers import SentenceTransformer
-from folketingetApi.repositories.search_repository import fetch_similar_items
+from repositories.search_repository import fetch_similar_items
 from typing import Dict, Any
+import os
 
-MODEL_PATH = "folketingetApi/embedding_model/danishbert-cosine-embeddings"
+# root project folder
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Absolute path to the embedding model
+MODEL_PATH = os.path.join(BASE_DIR, "embedding_model",
+                          "danishbert-cosine-embeddings")
+
 model: Optional[SentenceTransformer] = None
 
 # --- Pydantic Models ---
+
 
 def startup_event():
     """Load the Sentence Transformer model on app startup."""
@@ -25,6 +33,7 @@ def startup_event():
         print(f"Error loading model: {e}")
         raise
 
+
 class SearchRequest(BaseModel):
     """Schema for the incoming search request."""
     query_text: str = Field(...,
@@ -37,6 +46,7 @@ class SearchRequest(BaseModel):
         0.5, description="The minimum similarity score for a match.")
 
 # --- Supabase Search Function (Async) ---
+
 
 async def fetch_similar_items_from_supabase(query_text: str, embedding: List[float], match_count: int, match_threshold: float) -> List[Dict[str, Any]]:
     """
@@ -65,6 +75,7 @@ async def fetch_similar_items_from_supabase(query_text: str, embedding: List[flo
             status_code=500,
             detail=f"An error occurred during Supabase similarity search: {str(e)}"
         )
+
 
 def get_model():
     if model is None:

@@ -1,4 +1,4 @@
-from folketingetApi.util.supabase_client_creator import get_supabase_client
+from util.supabase_client_creator import get_supabase_client
 
 supabase = get_supabase_client()
 

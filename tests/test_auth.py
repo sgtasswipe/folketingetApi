@@ -3,9 +3,9 @@ import pytest_asyncio
 import time
 import os
 from fastapi import HTTPException
-import folketingetApi.repositories.auth_repository as auth_repository
-from folketingetApi.controllers.auth import delete_user, sign_up_with_email, login
-from folketingetApi.services.auth_service import DeleteUserRequest, UserCredentials
+import repositories.auth_repository as auth_repository
+from controllers.auth import delete_user, sign_up_with_email, login
+from services.auth_service import DeleteUserRequest, UserCredentials
 from supabase import create_client
 
 # Testing with overriding supabase client
