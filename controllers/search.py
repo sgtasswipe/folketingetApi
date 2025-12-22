@@ -5,9 +5,9 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import HTTPException
 from sentence_transformers import SentenceTransformer
-import folketingetApi.controllers.auth as auth
-import folketingetApi.controllers.saved_votings as saved_votings
-from folketingetApi.services.search_service import get_model, fetch_similar_items_from_supabase, SearchRequest, startup_event
+import controllers.auth as auth
+import controllers.saved_votings as saved_votings
+from services.search_service import get_model, fetch_similar_items_from_supabase, SearchRequest, startup_event
 
 # --- Configuration ---
 load_dotenv()  # Load environment variables
@@ -77,4 +77,4 @@ async def search_similar_items(request_data: SearchRequest, model: SentenceTrans
     # Return the results directly to the React Native app
     return similar_items
 
-# uvicorn folketingetApi.controllers.search:app --reload --host 0.0.0.0 --port 5001
+# uvicorn controllers.search:app --reload --host 0.0.0.0 --port 5001

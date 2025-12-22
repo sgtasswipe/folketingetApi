@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from folketingetApi.repositories.auth_repository import sign_up_supabase, login_supabase, get_user_supabase, delete_user_supabase
+from repositories.auth_repository import sign_up_supabase, login_supabase, get_user_supabase, delete_user_supabase
 
 
 class DeleteUserRequest(BaseModel):
