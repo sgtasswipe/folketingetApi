@@ -9,13 +9,25 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
 import asyncio
-import auth
+import controllers.auth as auth
+from huggingface_hub import snapshot_download
 
-MODEL_PATH = "embedding_model/danishbert-supabase-embeddings-v3/danishbert-supabase-embeddings-v3"
+
+MODEL_PATH = "embedding_model/danishbert-cosine-embeddings"
 # The API will use a regular synchronous function (def) for this endpoint,
 # which FastAPI automatically runs in a thread pool to avoid blocking the event loop.
 # Default is 40 threads for per worker - 40 concurrenct requests.
 
+HF_TOKEN = os.environ.get("HF_TOKEN")
+
+os.makedirs("embedding_model", exist_ok=True)
+
+snapshot_download(
+    repo_id="heizetagram/danishbert-cosine-embeddings",
+    local_dir="embedding_model",
+    local_dir_use_symlinks=False,
+    use_auth_token=True
+)
 
 app = FastAPI(
     title="Sentence Transformer Embedding Service",
@@ -121,8 +133,3 @@ async def fetch_similar_votings_from_supabase(embedding: EmbedResponse, match_co
 # used for running the script
 
 # fetch similar items
-
-
-
-
-            ddsdsddasddasssssddsdsddmklsdmkldskmdseeeeggggfdffdffdffdf

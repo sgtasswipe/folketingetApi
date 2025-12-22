@@ -3,9 +3,10 @@ import pytest_asyncio
 import time
 import os
 from fastapi import HTTPException
-from folketingetApi.auth import DeleteUserRequest, delete_user, sign_up_with_email, login, UserCredentials, supabase
+import folketingetApi.repositories.auth_repository as auth_repository
+from folketingetApi.controllers.auth import delete_user, sign_up_with_email, login
+from folketingetApi.services.auth_service import DeleteUserRequest, UserCredentials
 from supabase import create_client
-import folketingetApi.auth as auth
 
 # Testing with overriding supabase client
 @pytest.fixture
@@ -25,7 +26,7 @@ def shared_credentials():
 def override_supabase(monkeypatch, supabase_admin):
     # Replace the supabase client inside auth.py
 
-    monkeypatch.setattr(auth, "supabase", supabase_admin)
+    monkeypatch.setattr(auth_repository, "supabase", supabase_admin)
 
 # ----- Integration tests -----
 
